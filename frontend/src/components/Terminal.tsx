@@ -33,12 +33,31 @@ export const Terminal: React.FC<TerminalProps> = ({ onCommand }) => {
   const fitAddonRef = useRef<FitAddon | null>(null);
   const currentLineRef = useRef<string>('');
   const commandRegistryRef = useRef<ReturnType<typeof createCommandRegistry> | null>(null);
+  const onCommandRef = useRef(onCommand);
+  const isInitializedRef = useRef(false);
+  const previousUserRef = useRef<string | undefined>(undefined);
   const auth = useAuth();
+  
+  // Keep onCommand ref up to date
+  useEffect(() => {
+    onCommandRef.current = onCommand;
+  }, [onCommand]);
   
   // Update command registry when auth changes
   useEffect(() => {
     commandRegistryRef.current = createCommandRegistry(auth);
-  }, [auth.user, auth.isAuthenticated]);
+    
+    // Only update the prompt if terminal is initialized and user actually changed
+    const currentUser = auth.user?.username;
+    const userChanged = previousUserRef.current !== currentUser;
+    
+    if (xtermRef.current && isInitializedRef.current && !auth.isLoading && userChanged) {
+      // Clear current line and show new prompt
+      xtermRef.current.write('\r\x1b[K' + getPrompt(currentUser));
+      currentLineRef.current = '';
+      previousUserRef.current = currentUser;
+    }
+  }, [auth.user, auth.isAuthenticated, auth.isLoading]);
 
   useEffect(() => {
     if (!terminalRef.current) return;
@@ -96,6 +115,10 @@ export const Terminal: React.FC<TerminalProps> = ({ onCommand }) => {
       fitAddon.fit();
       // Display welcome message after terminal is ready
       displayWelcomeScreen(term);
+      // Mark terminal as initialized after welcome screen
+      isInitializedRef.current = true;
+      // Store initial user state
+      previousUserRef.current = auth.user?.username;
     }, 0);
 
     // Handle input
@@ -138,8 +161,8 @@ export const Terminal: React.FC<TerminalProps> = ({ onCommand }) => {
               }
               
               // Call optional onCommand callback
-              if (onCommand) {
-                onCommand(input);
+              if (onCommandRef.current) {
+                onCommandRef.current(input);
               }
               
               // For auth commands, wait a bit for state to update
@@ -195,7 +218,7 @@ export const Terminal: React.FC<TerminalProps> = ({ onCommand }) => {
       window.removeEventListener('resize', handleResize);
       term.dispose();
     };
-  }, [onCommand]);
+  }, []); // Empty deps - only initialize once
 
   return (
     <div className="terminal-container w-full h-full bg-[#0f0f1a] p-4">

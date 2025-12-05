@@ -197,61 +197,61 @@
   - _Requirements: 2.7_
 
 - [ ] 8. WebSocket Infrastructure
-- [ ] 8.1 Set up Socket.io on backend
+- [x] 8.1 Set up Socket.io on backend
   - Install and configure Socket.io
   - Implement WebSocket authentication (validate JWT on connection)
   - Create connection/disconnection handlers
   - Set up room management for Whisper Room
   - _Requirements: 4.1, 13.1_
 
-- [ ] 8.2 Write property test for WebSocket connection
+- [x] 8.2 Write property test for WebSocket connection
   - **Property 15: Chat message broadcast**
   - **Validates: Requirements 4.2**
 
-- [ ] 8.3 Implement presence tracking
+- [x] 8.3 Implement presence tracking
   - Store connected users in Redis with timestamps
   - Broadcast join/leave events to all users
   - Implement heartbeat mechanism for connection health
   - _Requirements: 4.3, 4.4_
 
-- [ ] 8.4 Write property test for presence tracking
+- [x] 8.4 Write property test for presence tracking
   - **Property 16: Presence tracking**
   - **Validates: Requirements 4.3, 4.4**
 
-- [ ] 8.5 Set up Socket.io client on frontend
+- [x] 8.5 Set up Socket.io client on frontend
   - Install Socket.io client
   - Create WebSocket manager component
   - Implement connection with JWT authentication
   - Handle reconnection with exponential backoff
   - _Requirements: 13.1, 13.3_
 
-- [ ] 8.6 Write property test for reconnection
+- [x] 8.6 Write property test for reconnection
   - **Property 17: WebSocket reconnection**
   - **Validates: Requirements 13.3**
 
 - [ ] 9. Whisper Room (Real-Time Chat)
-- [ ] 9.1 Implement chat message handling on backend
+- [x] 9.1 Implement chat message handling on backend
   - Create socket event handler for "chat:send"
   - Validate and sanitize message content
   - Broadcast message to all users in room
   - Store recent messages in Redis for history (last 50 messages)
   - _Requirements: 4.2, 18.4_
 
-- [ ] 9.2 Write property test for input sanitization
+- [x] 9.2 Write property test for input sanitization
   - **Property 54: Input sanitization**
   - **Validates: Requirements 18.4**
 
-- [ ] 9.3 Write property test for broadcast reliability
+- [x] 9.3 Write property test for broadcast reliability
   - **Property 18: Broadcast reliability**
   - **Validates: Requirements 13.4**
 
-- [ ] 9.4 Implement chat history endpoint
+- [x] 9.4 Implement chat history endpoint
   - Create GET /api/chat/history endpoint
   - Return last 50 messages from Redis
   - Include user information for each message
   - _Requirements: 4.1_
 
-- [ ] 9.5 Implement Whisper Room frontend
+- [x] 9.5 Implement Whisper Room frontend
   - Create "chat" command to enter Whisper Room
   - Display chat history on entry
   - Show user presence list
@@ -260,18 +260,18 @@
   - _Requirements: 4.1, 4.2, 4.3_
 
 - [ ] 10. Ghost Engine Core
-- [ ] 10.1 Implement Ghost State Machine
+- [x] 10.1 Implement Ghost State Machine
   - Create GhostState model in Redis
   - Implement mode transitions (Whisperer, Poltergeist, Trickster, Demon)
   - Store current mode, intensity, and trigger history
   - Create state persistence and retrieval functions
   - _Requirements: 5.1, 14.3_
 
-- [ ] 10.2 Write property test for ghost state synchronization
+- [x] 10.2 Write property test for ghost state synchronization
   - **Property 45: Ghost state synchronization**
   - **Validates: Requirements 14.3**
 
-- [ ] 10.3 Implement trigger system
+- [x] 10.3 Implement trigger system
   - Create trigger evaluation engine
   - Implement keyword trigger detection
   - Implement silence trigger (track last message time)
@@ -279,25 +279,25 @@
   - Create trigger priority and sequencing logic
   - _Requirements: 5.1, 5.2, 5.3, 17.2, 17.4_
 
-- [ ] 10.4 Write property test for keyword triggers
+- [x] 10.4 Write property test for keyword triggers
   - **Property 11: Keyword trigger mode transition**
   - **Validates: Requirements 5.1**
 
-- [ ] 10.5 Write property test for silence triggers
+- [x] 10.5 Write property test for silence triggers
   - **Property 12: Silence trigger activation**
   - **Validates: Requirements 5.2**
 
-- [ ] 10.6 Write property test for event sequencing
+- [x] 10.6 Write property test for event sequencing
   - **Property 14: Ghost event sequencing**
   - **Validates: Requirements 3.5, 17.4**
 
-- [ ] 10.7 Implement ghost event scheduler
+- [x] 10.7 Implement ghost event scheduler
   - Create cron job system for time-based events
   - Implement event queue for scheduled interventions
   - Create event execution handlers
   - _Requirements: 17.1_
 
-- [ ] 10.8 Write property test for scheduled events
+- [x] 10.8 Write property test for scheduled events
   - **Property 57: Service failure fallback**
   - **Validates: Requirements 20.3**
 
@@ -343,8 +343,8 @@
   - **Property 13: Mode-specific message generation**
   - **Validates: Requirements 5.4, 5.5, 5.6, 5.7**
 
-- [ ] 12. Ghost Chat Integration
-- [ ] 12.1 Integrate ghost into Whisper Room
+- [-] 12. Ghost Chat Integration
+- [x] 12.1 Integrate ghost into Whisper Room
   - Connect ghost engine to chat WebSocket events
   - Implement ghost message injection into chat
   - Mark ghost messages with isGhost flag

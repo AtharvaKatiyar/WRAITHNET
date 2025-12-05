@@ -116,6 +116,25 @@
   }
 }
 
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+.animate-pulse-slow {
+  animation: ghostPulse 3s ease-in-out infinite;
+}
+
 /* Haunted Sidebar Styles */
 .haunted-sidebar {
   background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);

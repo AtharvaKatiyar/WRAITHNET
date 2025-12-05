@@ -1,7 +1,33 @@
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 import bcrypt from 'bcrypt';
+import dotenv from 'dotenv';
 
-const prisma = new PrismaClient();
+// Load environment variables
+dotenv.config();
+
+// Parse DATABASE_URL to extract connection parameters
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+  throw new Error('DATABASE_URL environment variable is not set');
+}
+const url = new URL(databaseUrl);
+
+// Create PostgreSQL connection pool
+const pool = new Pool({
+  host: url.hostname,
+  port: parseInt(url.port || '5432'),
+  database: url.pathname.slice(1),
+  user: url.username,
+  password: url.password,
+});
+
+// Create Prisma adapter
+const adapter = new PrismaPg(pool);
+
+// Create Prisma client with adapter
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log('🌱 Seeding database...');

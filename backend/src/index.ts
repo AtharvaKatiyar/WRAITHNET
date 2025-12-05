@@ -1,5 +1,7 @@
 import dotenv from 'dotenv';
+import { createServer } from 'http';
 import { createApp } from './app';
+import { initializeWebSocket } from './config/socket';
 import logger from './config/logger';
 
 // Load environment variables
@@ -10,8 +12,14 @@ const PORT = process.env.PORT || 3000;
 const startServer = async () => {
   try {
     const app = createApp();
+    
+    // Create HTTP server
+    const httpServer = createServer(app);
+    
+    // Initialize WebSocket server
+    const wsServer = initializeWebSocket(httpServer);
 
-    app.listen(PORT, () => {
+    httpServer.listen(PORT, () => {
       logger.info(`
 ╔═══════════════════════════════════════════════════════════╗
 ║                                                           ║
@@ -24,6 +32,8 @@ const startServer = async () => {
 Server Status: ONLINE
 Port: ${PORT}
 Environment: ${process.env.NODE_ENV || 'development'}
+WebSocket: ENABLED
+Connected Users: ${wsServer.getConnectedUserCount()}
 Time: ${new Date().toISOString()}
 
 The spirits are listening...
@@ -33,7 +43,10 @@ The spirits are listening...
     // Graceful shutdown
     const shutdown = async (signal: string) => {
       logger.info(`${signal} received. Shutting down gracefully...`);
-      process.exit(0);
+      httpServer.close(() => {
+        logger.info('HTTP server closed');
+        process.exit(0);
+      });
     };
 
     process.on('SIGTERM', () => shutdown('SIGTERM'));

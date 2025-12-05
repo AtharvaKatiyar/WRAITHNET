@@ -92,9 +92,10 @@ The entire system functions as a possessed, resurrected network filled with ghos
 ### Why WRAITHNET?
 
 - 🎮 **Nostalgic Yet Modern:** Experience the charm of classic BBS systems with modern web technologies
-- 🤖 **AI-Powered Horror:** Dynamic ghost personalities that respond to your actions
-- 🎨 **Atmospheric Immersion:** Visual corruption effects, audio cues, and cinematic storytelling
-- 🔮 **Unpredictable Gameplay:** Random events, file corruption, and evolving narratives
+- 🤖 **AI-Powered Horror:** Dynamic ghost personalities that respond to your actions in real-time
+- 👻 **Living Ghost Engine:** Four distinct ghost modes (Whisperer, Poltergeist, Trickster, Demon) that react to keywords, silence, and sentiment
+- 🎨 **Atmospheric Immersion:** Real-time chat with supernatural interventions
+- 🔮 **Unpredictable Gameplay:** Ghost behavior adapts based on conversation patterns and triggers
 - 💻 **Authentic Terminal:** Real command-line interface powered by xterm.js
 - 🌐 **Full-Stack Experience:** Learn modern web development through a unique project
 
@@ -122,29 +123,36 @@ The entire system functions as a possessed, resurrected network filled with ghos
 - ✅ **Command History** - Navigate through previous commands
 - ✅ **Help System** - Comprehensive command documentation
 
-### 🟡 Coming Soon
+#### WebSocket Infrastructure
+- ✅ **Real-Time Communication** - Socket.io powered bidirectional messaging
+- ✅ **JWT Authentication** - Secure WebSocket connections
+- ✅ **Presence Tracking** - Monitor online users with heartbeat mechanism
+- ✅ **Room Management** - Join/leave chat rooms dynamically
+- ✅ **Connection Resilience** - Automatic reconnection handling
 
 #### Real-Time Chat (Whisper Room)
-- 🔜 **Live Ghost Chatroom** - Real-time WebSocket-powered conversations
-- 🔜 **Ghost Interventions** - AI entities that join and influence discussions
-- 🔜 **User Presence** - See who else is connected to the network
+- ✅ **Live Ghost Chatroom** - Real-time WebSocket-powered conversations
+- ✅ **Ghost Interventions** - AI entities that join and influence discussions
+- ✅ **User Presence** - See who else is connected to the network
+- ✅ **Chat History** - Recent message persistence (last 50 messages)
 - 🔜 **Private Whispers** - Direct messages with distinct supernatural styling
-- 🔜 **Chat History** - Recent message persistence
 
 #### Dynamic Ghost AI System
-- 🔜 **Shapeshifting Personalities** - Four distinct ghost modes:
+- ✅ **Shapeshifting Personalities** - Four distinct ghost modes:
   - **Whisperer** - Subtle, cryptic, mysterious messages
   - **Poltergeist** - Aggressive, chaotic, disruptive behavior
   - **Trickster** - Playful, misleading, puzzle-like interactions
   - **Demon** - Threatening, intense, overwhelming presence
-- 🔜 **Trigger System** - Ghost behavior responds to:
+- ✅ **Trigger System** - Ghost behavior responds to:
   - Keyword detection in conversations
-  - Silence thresholds
+  - Silence thresholds (60 seconds)
   - Sentiment analysis
-  - Time-based events
-  - Narrative progression
-- 🔜 **Ghost Message Injection** - Supernatural entities post to message boards
+  - Dynamic mode transitions
+- ✅ **Ghost Message Injection** - Supernatural entities appear in chat with distinct styling
+- ✅ **State Persistence** - Ghost state maintained in Redis with intervention history
 - 🔜 **Thread Corruption** - Text corruption effects on existing messages
+
+### 🟡 Coming Soon
 
 #### Séance Lab (AI Necromancer)
 - 🔜 **Personal Ghost Creation** - Upload text to summon custom AI personas
@@ -207,6 +215,76 @@ The entire system functions as a possessed, resurrected network filled with ghos
   - Door creaks
   - Heartbeat
   - Ambient drones
+
+## 👻 The Ghost Engine
+
+WRAITHNET features a sophisticated AI-powered Ghost Engine that creates dynamic, unpredictable horror experiences. The ghost is not just a chatbot—it's a living entity that observes, reacts, and evolves based on user interactions.
+
+### Ghost Personality Modes
+
+The ghost can manifest in four distinct modes, each with unique characteristics:
+
+#### 🌫️ Whisperer Mode
+- **Tone:** Subtle, cryptic, mysterious
+- **Behavior:** Offers enigmatic hints and observations
+- **Triggers:** Help-seeking keywords, positive sentiment
+- **Intensity:** Low (10-40%)
+- **Example:** *"I sense... something in the shadows..."*
+
+#### ⚡ Poltergeist Mode
+- **Tone:** Aggressive, chaotic, disruptive
+- **Behavior:** Fragmented messages, urgent warnings
+- **Triggers:** Anger keywords, negative sentiment
+- **Intensity:** High (50-80%)
+- **Example:** *"*CRASH* Did you hear that?!"*
+
+#### 🎭 Trickster Mode
+- **Tone:** Playful, misleading, puzzle-like
+- **Behavior:** Riddles, wordplay, misdirection
+- **Triggers:** Game/fun keywords, moderate positive sentiment
+- **Intensity:** Moderate (30-60%)
+- **Example:** *"Hehe... want to play a game?"*
+
+#### 😈 Demon Mode
+- **Tone:** Threatening, intense, overwhelming
+- **Behavior:** Dark prophecies, direct threats
+- **Triggers:** Death/fear keywords, very negative sentiment
+- **Intensity:** Maximum (70-100%)
+- **Example:** *"Your soul... it calls to me..."*
+
+### Trigger System
+
+The Ghost Engine continuously monitors chat activity and responds to various triggers:
+
+**Keyword Triggers (Priority: High)**
+- Detects specific words that invoke mode transitions
+- Examples: "help" → Whisperer, "angry" → Poltergeist, "trick" → Trickster, "death" → Demon
+
+**Silence Triggers (Priority: Medium)**
+- Activates after 60 seconds of chat inactivity
+- Randomly selects a mode for intervention
+- Creates atmospheric tension during quiet moments
+
+**Sentiment Analysis (Priority: Medium)**
+- Analyzes emotional tone of messages
+- Very negative → Demon, Negative → Poltergeist
+- Positive → Trickster, Very positive → Whisperer
+
+**State Persistence**
+- Ghost state stored in Redis with full history
+- Tracks current mode, intensity level, and intervention timestamps
+- Maintains trigger history for narrative coherence
+
+### How It Works
+
+1. **User sends a message** in the Whisper Room
+2. **Trigger evaluation** analyzes keywords, sentiment, and timing
+3. **Mode transition** occurs if triggers are detected
+4. **Ghost response** is generated after a random delay (2-7 seconds)
+5. **Message injection** broadcasts the ghost's message to all users
+6. **State update** persists the new ghost state to Redis
+
+The ghost appears as a distinct entity in chat with special styling, making its supernatural presence unmistakable.
 
 ## 🎮 Available Commands
 
@@ -738,18 +816,20 @@ localStorage.setItem('debug', 'wraithnet:*')
 - ✅ Terminal interface with command parsing
 - ✅ Basic retro aesthetics
 
-### Phase 2: Real-Time Features (🚧 In Progress)
-- 🔜 WebSocket infrastructure
-- 🔜 Whisper Room (live chat)
-- 🔜 User presence tracking
-- 🔜 Real-time notifications
+### Phase 2: Real-Time Features (✅ Complete)
+- ✅ WebSocket infrastructure
+- ✅ Whisper Room (live chat)
+- ✅ User presence tracking
+- ✅ Real-time notifications
 
-### Phase 3: AI Ghost System (📋 Planned)
-- 🔜 Ghost personality engine
-- 🔜 Dynamic mode transitions
-- 🔜 Trigger system (keywords, silence, sentiment)
-- 🔜 AI-generated ghost messages
+### Phase 3: AI Ghost System (✅ Complete)
+- ✅ Ghost personality engine with 4 distinct modes
+- ✅ Dynamic mode transitions based on triggers
+- ✅ Trigger system (keywords, silence, sentiment)
+- ✅ Ghost message generation and injection
+- ✅ State persistence in Redis
 - 🔜 Visual and audio effects
+- 🔜 AI-powered message generation (OpenAI integration)
 
 ### Phase 4: Advanced Features (📋 Planned)
 - 🔜 Séance Lab (personal ghost creation)
@@ -864,7 +944,22 @@ Not at all! While WRAITHNET uses a terminal interface, all commands are simple a
 <details>
 <summary><b>Is WRAITHNET actually haunted?</b></summary>
 
-While we can't confirm or deny supernatural activity, the AI ghost system is very much real and will interact with you in unpredictable ways. The ghosts learn from conversations, inject messages into threads, and create atmospheric horror experiences. Enter at your own risk. 👻
+While we can't confirm or deny supernatural activity, the AI Ghost Engine is very much real and will interact with you in unpredictable ways. The ghost monitors conversations, responds to keywords and sentiment, and manifests in four distinct personality modes. It can appear during silence, react to your emotions, and create atmospheric horror experiences in real-time. Enter at your own risk. 👻
+
+</details>
+
+<details>
+<summary><b>How does the Ghost Engine work?</b></summary>
+
+The Ghost Engine is a sophisticated state machine that:
+- Monitors all chat messages for keywords and sentiment
+- Tracks silence periods (triggers after 60 seconds)
+- Transitions between 4 personality modes (Whisperer, Poltergeist, Trickster, Demon)
+- Generates contextually appropriate messages for each mode
+- Maintains state persistence in Redis with full intervention history
+- Injects messages into chat with random delays for atmospheric effect
+
+The ghost is not scripted—it reacts dynamically to user behavior, making each session unique.
 
 </details>
 
@@ -927,11 +1022,17 @@ Together, they provide comprehensive test coverage.
 
 ## 🎉 Fun Facts
 
-- 👻 The ghost AI system uses 4 distinct personality modes
-- 🎲 File resurrection has a 10% chance of complete transformation
-- 🔐 The Sysop Room requires solving cryptographic puzzles
-- 🎮 Door Games feature branching narratives with multiple endings
-- 📜 The entire system maintains an evolving narrative across all features
+- 👻 The Ghost Engine monitors every message and can respond within 2-7 seconds
+- 🎭 There are 4 distinct ghost personality modes, each with unique message pools
+- ⏱️ The ghost will intervene after 60 seconds of silence in the chat
+- 🧠 Sentiment analysis determines ghost mood based on conversation tone
+- 📊 Ghost state includes intensity levels from 0-100 that affect behavior
+- 🔄 The ghost maintains a history of up to 50 trigger events in Redis
+- 💬 Chat history stores the last 50 messages for context
+- 🎲 File resurrection has a 10% chance of complete transformation (coming soon)
+- 🔐 The Sysop Room requires solving cryptographic puzzles (coming soon)
+- 🎮 Door Games feature branching narratives with multiple endings (coming soon)
+- 📜 The entire system maintains an evolving narrative that responds to user actionsarrative across all features
 - 🎨 Over 50 different visual corruption effects planned
 - 🎵 Atmospheric audio synchronized with ghost events
 

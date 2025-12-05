@@ -795,11 +795,12 @@ export function createCommandRegistry(auth?: AuthContext): CommandRegistry {
             const replyMarker = i === 0 ? '' : `${purple}↳${reset} `;
 
             // Message header
+            const authorName = message.author?.username || '👻 [GHOST]';
             if (i === 0) {
-              terminal.writeln(`${brightPurple}${bold}${message.author.username}${reset} ${dimGray}(OP)${reset}`);
+              terminal.writeln(`${brightPurple}${bold}${authorName}${reset} ${dimGray}(OP)${reset}`);
               terminal.writeln(`${dimGray}${dateStr} at ${timeStr}${reset}`);
             } else {
-              terminal.writeln(`${indent}${replyMarker}${brightPurple}${bold}${message.author.username}${reset}`);
+              terminal.writeln(`${indent}${replyMarker}${brightPurple}${bold}${authorName}${reset}`);
               terminal.writeln(`${indent}  ${dimGray}${dateStr} at ${timeStr}${reset}`);
             }
             terminal.writeln('');
@@ -1011,7 +1012,7 @@ export function createCommandRegistry(auth?: AuthContext): CommandRegistry {
           }
 
           const threadData = await threadResponse.json();
-          const thread = threadData.data;
+          const thread = threadData.thread || threadData.data;
 
           // Clear the "Fetching..." line
           terminal.write('\x1b[1A\x1b[2K');
@@ -1019,8 +1020,9 @@ export function createCommandRegistry(auth?: AuthContext): CommandRegistry {
           // Show the thread we're replying to
           terminal.writeln('');
           terminal.writeln(`${dimGray}━━━ Replying to ━━━${reset}`);
-          terminal.writeln(`${purple}${thread.title}${reset}`);
-          terminal.writeln(`${dimGray}by ${brightPurple}${thread.author.username}${reset}`);
+          terminal.writeln(`${purple}${thread?.title || 'Unknown Thread'}${reset}`);
+          const authorName = thread?.author?.username || 'Unknown';
+          terminal.writeln(`${dimGray}by ${brightPurple}${authorName}${reset}`);
           
           // Show the original post content (first message)
           if (thread.messages && thread.messages.length > 0) {
@@ -1112,11 +1114,37 @@ export function createCommandRegistry(auth?: AuthContext): CommandRegistry {
       handler: async (_args: string[], terminal: Terminal) => {
         const dimGray = '\x1b[90m';
         const purple = '\x1b[35m';
+        const brightPurple = '\x1b[95m';
+        const green = '\x1b[32m';
+        const red = '\x1b[31m';
         const reset = '\x1b[0m';
-        
+        const bold = '\x1b[1m';
+
+        if (!auth) {
+          terminal.writeln('');
+          terminal.writeln(`${red}Authentication system not available${reset}`);
+          terminal.writeln('');
+          return;
+        }
+
+        if (!auth.isAuthenticated) {
+          terminal.writeln('');
+          terminal.writeln(`${dimGray}You must be logged in to enter the Whisper Room${reset}`);
+          terminal.writeln(`${dimGray}Type ${purple}login${dimGray} to authenticate${reset}`);
+          terminal.writeln('');
+          return;
+        }
+
         terminal.writeln('');
-        terminal.writeln(`${dimGray}[Chat room not yet implemented]${reset}`);
-        terminal.writeln(`${purple}Coming soon...${reset}`);
+        terminal.writeln(`${green}✓ Opening the Whisper Room...${reset}`);
+        terminal.writeln(`${dimGray}The spirits gather around you...${reset}`);
+        terminal.writeln('');
+        terminal.writeln(`${brightPurple}${bold}👻 Check the bottom-right corner of your screen!${reset}`);
+        terminal.writeln('');
+        terminal.writeln(`${dimGray}The Whisper Room chat widget has opened.${reset}`);
+        terminal.writeln(`${dimGray}You can now chat with other users and spirits in real-time.${reset}`);
+        terminal.writeln('');
+        terminal.writeln(`${dimGray}Type ${purple}chat${dimGray} again to reopen if you close it.${reset}`);
         terminal.writeln('');
       },
     },

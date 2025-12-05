@@ -100,12 +100,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(errorMessage);
       }
 
-      // Store token and user info
-      localStorage.setItem('wraithnet_token', data.token);
-      localStorage.setItem('wraithnet_user', JSON.stringify(data.user));
-      
-      setToken(data.token);
-      setUser(data.user);
+      // Registration successful - do NOT auto-login
+      // User needs to login separately after registration
+      // This is more secure and follows best practices
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       setError(errorMessage);

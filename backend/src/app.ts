@@ -6,6 +6,7 @@ import logger from './config/logger';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import authRoutes from './routes/authRoutes';
 import boardRoutes from './routes/boardRoutes';
+import chatRoutes from './routes/chatRoutes';
 
 export const createApp = (): Application => {
   const app = express();
@@ -50,6 +51,7 @@ export const createApp = (): Application => {
   // API routes
   app.use('/api/auth', authRoutes);
   app.use('/api/boards', boardRoutes);
+  app.use('/api/chat', chatRoutes);
 
   // 404 handler
   app.use(notFoundHandler);
