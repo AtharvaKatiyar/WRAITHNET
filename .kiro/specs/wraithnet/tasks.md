@@ -189,7 +189,7 @@
   - Format output to show thread title, thread ID, reply content, and message ID
   - _Requirements: 2.6_
 
-- [ ] 7.6 Implement delete-reply command
+- [x] 7.6 Implement delete-reply command
   - Create command handler for "delete-reply <message_id>"
   - Send DELETE request to remove reply
   - Display success or error message

@@ -542,17 +542,37 @@ export class BoardService {
    */
   async deleteMessage(messageId: string, userId: string) {
     try {
-      // Find the message
-      const message = await prisma.message.findUnique({
+      // Find the message (support partial ID matching)
+      let message = await prisma.message.findUnique({
         where: { id: messageId },
         include: {
           thread: true,
         },
       });
 
+      // If not found and ID is short (partial), try prefix match
+      if (!message && messageId.length < 36) {
+        const messages = await prisma.message.findMany({
+          where: {
+            id: {
+              startsWith: messageId,
+            },
+          },
+          include: {
+            thread: true,
+          },
+          take: 1,
+        });
+        
+        message = messages[0];
+      }
+
       if (!message) {
         throw new AppError('The message you seek has vanished into the darkness.', 404);
       }
+
+      // Use the full message ID from the found message
+      const fullMessageId = message.id;
 
       // Check if user is the author
       if (message.authorId !== userId) {
@@ -565,15 +585,15 @@ export class BoardService {
         orderBy: { createdAt: 'asc' },
       });
 
-      if (firstMessage?.id === messageId) {
+      if (firstMessage?.id === fullMessageId) {
         throw new AppError('Cannot delete the original post. Delete the entire thread instead.', 400);
       }
 
       // Delete the message and update thread timestamp in a transaction
       await prisma.$transaction(async (tx) => {
-        // Delete the message
+        // Delete the message using the full ID
         await tx.message.delete({
-          where: { id: messageId },
+          where: { id: fullMessageId },
         });
 
         // Find the most recent remaining message
@@ -591,7 +611,7 @@ export class BoardService {
         });
       });
 
-      logger.info({ messageId, userId }, 'Message deleted successfully');
+      logger.info({ messageId: fullMessageId, userId }, 'Message deleted successfully');
 
       return { success: true };
     } catch (error) {

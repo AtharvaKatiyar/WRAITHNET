@@ -83,6 +83,7 @@ export function createCommandRegistry(auth?: AuthContext): CommandRegistry {
           terminal.writeln(`  ${purple}read <id>${reset}         ${dimGray}Read a specific thread${reset}`);
           terminal.writeln(`  ${purple}post${reset}              ${dimGray}Create a new thread${reset}`);
           terminal.writeln(`  ${purple}reply <id>${reset}        ${dimGray}Reply to a thread${reset}`);
+          terminal.writeln(`  ${purple}delete-reply <id>${reset} ${dimGray}Delete one of your replies${reset}`);
           terminal.writeln('');
           
           terminal.writeln(`${gray}${bold}CHAT${reset}`);
@@ -503,6 +504,92 @@ export function createCommandRegistry(auth?: AuthContext): CommandRegistry {
           terminal.write('\x1b[1A\x1b[2K');
           terminal.writeln('');
           terminal.writeln(`${red}✗ Failed to load reply history${reset}`);
+          terminal.writeln(`${dimGray}${error instanceof Error ? error.message : 'Unknown error'}${reset}`);
+          terminal.writeln('');
+        }
+      },
+    },
+
+    'delete-reply': {
+      name: 'delete-reply',
+      description: 'Delete one of your replies',
+      aliases: ['deletereply', 'rmreply'],
+      usage: 'delete-reply <message_id>',
+      handler: async (_args: string[], terminal: Terminal) => {
+        const dimGray = '\x1b[90m';
+        const purple = '\x1b[35m';
+        const brightPurple = '\x1b[95m';
+        const red = '\x1b[31m';
+        const green = '\x1b[32m';
+        const reset = '\x1b[0m';
+
+        if (!auth) {
+          terminal.writeln('');
+          terminal.writeln(`${red}Authentication system not available${reset}`);
+          terminal.writeln('');
+          return;
+        }
+
+        if (!auth.isAuthenticated) {
+          terminal.writeln('');
+          terminal.writeln(`${dimGray}You must be logged in to delete replies${reset}`);
+          terminal.writeln(`${dimGray}Type ${purple}login${dimGray} to authenticate${reset}`);
+          terminal.writeln('');
+          return;
+        }
+
+        if (_args.length === 0) {
+          terminal.writeln('');
+          terminal.writeln(`${dimGray}Usage: ${purple}delete-reply <message_id>${reset}`);
+          terminal.writeln(`${dimGray}Example: ${purple}delete-reply a1b2c3d4${reset}`);
+          terminal.writeln('');
+          terminal.writeln(`${dimGray}Tip: Use ${purple}replied${dimGray} to see your reply history with message IDs${reset}`);
+          terminal.writeln('');
+          return;
+        }
+
+        const messageId = _args[0];
+
+        terminal.writeln('');
+        terminal.writeln(`${dimGray}Deleting reply...${reset}`);
+
+        try {
+          const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+          const response = await fetch(`${API_URL}/api/boards/messages/${messageId}`, {
+            method: 'DELETE',
+            headers: {
+              Authorization: `Bearer ${auth.token}`,
+            },
+          });
+
+          if (!response.ok) {
+            if (response.status === 404) {
+              throw new Error('Message not found');
+            } else if (response.status === 403) {
+              throw new Error('You can only delete your own replies');
+            } else if (response.status === 400) {
+              const data = await response.json();
+              throw new Error(data.error || data.message || 'Cannot delete this message');
+            }
+            const data = await response.json();
+            throw new Error(data.error || data.message || 'Failed to delete reply');
+          }
+
+          // Clear the "Deleting..." line
+          terminal.write('\x1b[1A\x1b[2K');
+
+          terminal.writeln('');
+          terminal.writeln(`${green}✓ Reply deleted successfully!${reset}`);
+          terminal.writeln(`${dimGray}Message ID: ${brightPurple}${messageId.substring(0, 8)}${reset}`);
+          terminal.writeln('');
+          terminal.writeln(`${dimGray}Type ${purple}replied${dimGray} to view your updated reply history${reset}`);
+          terminal.writeln(`${dimGray}Type ${purple}board${dimGray} to return to the message board${reset}`);
+          terminal.writeln('');
+        } catch (error) {
+          // Clear the "Deleting..." line
+          terminal.write('\x1b[1A\x1b[2K');
+          terminal.writeln('');
+          terminal.writeln(`${red}✗ Failed to delete reply${reset}`);
           terminal.writeln(`${dimGray}${error instanceof Error ? error.message : 'Unknown error'}${reset}`);
           terminal.writeln('');
         }
