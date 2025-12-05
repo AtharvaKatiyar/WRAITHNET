@@ -142,9 +142,18 @@ export const Terminal: React.FC<TerminalProps> = ({ onCommand }) => {
                 onCommand(input);
               }
               
-              // Show prompt with current auth state
-              const currentUser = commandRegistryRef.current?.auth?.user?.username;
-              term.write(getPrompt(currentUser));
+              // For auth commands, wait a bit for state to update
+              const isAuthCommand = ['login', 'register', 'logout'].includes(parsed.command);
+              if (isAuthCommand) {
+                setTimeout(() => {
+                  const currentUser = commandRegistryRef.current?.auth?.user?.username;
+                  term.write(getPrompt(currentUser));
+                }, 100);
+              } else {
+                // Show prompt with current auth state
+                const currentUser = commandRegistryRef.current?.auth?.user?.username;
+                term.write(getPrompt(currentUser));
+              }
             }
           );
         } else {

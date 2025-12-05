@@ -1,16 +1,26 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
+import dotenv from 'dotenv';
 import logger from './logger';
 
-// Create PostgreSQL connection pool
-// Explicitly parse connection parameters to ensure proper typing
+// Load environment variables
+dotenv.config();
+
+// Parse DATABASE_URL to extract connection parameters
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+  throw new Error('DATABASE_URL environment variable is not set');
+}
+const url = new URL(databaseUrl);
+
+// Create PostgreSQL connection pool with explicit parameters
 const pool = new Pool({
-  host: 'localhost',
-  port: 5432,
-  database: 'wraithnet',
-  user: 'wraithnet',
-  password: 'wraithnet_dev_password',
+  host: url.hostname,
+  port: parseInt(url.port || '5432'),
+  database: url.pathname.slice(1), // Remove leading slash
+  user: url.username,
+  password: url.password,
   connectionTimeoutMillis: 5000,
 });
 
