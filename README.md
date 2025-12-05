@@ -845,13 +845,87 @@ SOFTWARE.
 - **Horror Aesthetics:** Influenced by games like Pony Island, Doki Doki Literature Club, and Inscryption
 - **Community:** Thanks to all contributors and testers
 
-## Contact & Support
+## ❓ FAQ
 
-- **GitHub Issues:** Report bugs and request features
-- **Discussions:** Share ideas and get help
-- **Discord:** [Coming soon]
+<details>
+<summary><b>What is a BBS?</b></summary>
 
-## Fun Facts
+A Bulletin Board System (BBS) was a computer server running software that allowed users to connect via terminal programs to read messages, play games, and interact with others. Popular in the 1980s and 1990s before the widespread adoption of the internet, BBS systems were the original social networks.
+
+</details>
+
+<details>
+<summary><b>Do I need to know command-line to use WRAITHNET?</b></summary>
+
+Not at all! While WRAITHNET uses a terminal interface, all commands are simple and documented. Type `help` at any time to see available commands. The interface is designed to be intuitive even for those unfamiliar with command-line tools.
+
+</details>
+
+<details>
+<summary><b>Is WRAITHNET actually haunted?</b></summary>
+
+While we can't confirm or deny supernatural activity, the AI ghost system is very much real and will interact with you in unpredictable ways. The ghosts learn from conversations, inject messages into threads, and create atmospheric horror experiences. Enter at your own risk. 👻
+
+</details>
+
+<details>
+<summary><b>What happens to my files in the Graveyard?</b></summary>
+
+Files buried in the Graveyard are encrypted and stored securely. When you resurrect them, there's a chance they'll be corrupted or transformed. The outcomes are:
+- 40% - Returned intact
+- 30% - Light corruption
+- 20% - Heavy corruption  
+- 10% - Complete transformation
+
+This is part of the gameplay experience!
+
+</details>
+
+<details>
+<summary><b>Can I run WRAITHNET without Docker?</b></summary>
+
+Yes, but Docker is recommended for easier setup. You'll need to manually install and configure PostgreSQL and Redis. See the [Getting Started](#-getting-started) section for details.
+
+</details>
+
+<details>
+<summary><b>Is my data secure?</b></summary>
+
+Yes! WRAITHNET uses industry-standard security practices:
+- Bcrypt password hashing
+- JWT authentication
+- File encryption
+- Input sanitization
+- SQL injection prevention
+
+However, this is a hobby project, so don't store critical data here.
+
+</details>
+
+<details>
+<summary><b>Can I contribute to WRAITHNET?</b></summary>
+
+Absolutely! Check out the [Contributing](#contributing) section for guidelines. We welcome bug fixes, documentation improvements, new Door Game narratives, and more.
+
+</details>
+
+<details>
+<summary><b>What's the difference between unit tests and property-based tests?</b></summary>
+
+- **Unit tests** verify specific examples (e.g., "logging in with valid credentials should succeed")
+- **Property-based tests** verify universal properties across many random inputs (e.g., "for any valid password, the hash should never match the plaintext")
+
+Together, they provide comprehensive test coverage.
+
+</details>
+
+## 📞 Contact & Support
+
+- **GitHub Issues:** [Report bugs and request features](../../issues)
+- **GitHub Discussions:** [Share ideas and get help](../../discussions)
+- **Discord:** Coming soon...
+
+## 🎉 Fun Facts
 
 - 👻 The ghost AI system uses 4 distinct personality modes
 - 🎲 File resurrection has a 10% chance of complete transformation
