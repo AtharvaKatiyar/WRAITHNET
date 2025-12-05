@@ -220,12 +220,16 @@ Session {
 - `POST /api/boards/threads`: Create new thread
 - `POST /api/boards/threads/:id/messages`: Reply to thread
 - `GET /api/boards/threads/:id/messages`: Get thread messages
+- `GET /api/boards/replies`: Get user's reply history with thread and message IDs
+- `DELETE /api/boards/messages/:messageId`: Delete a reply by message ID
 
 **Key Methods**:
 - `createThread(userId: string, title: string, content: string)`: Create thread
 - `addMessage(threadId: string, userId: string, content: string)`: Add message
 - `getThreads(filters?: ThreadFilters)`: List threads with pagination
 - `getMessages(threadId: string)`: Get all messages in thread
+- `getUserReplies(userId: string)`: Get all threads user has replied to with message IDs
+- `deleteMessage(messageId: string, userId: string)`: Delete a user's reply and update thread timestamp
 
 **Database Schema**:
 ```typescript
@@ -810,6 +814,14 @@ interface SysopAccess {
 **Property 10: Ghost message marking**
 *For any* ghost-injected message, it should be marked with `isGhostMessage: true` and rendered with distinct styling.
 **Validates: Requirements 2.5, 3.4**
+
+**Property 67: Reply history completeness**
+*For any* user with replies to threads, requesting their reply history should return all threads they have replied to with the correct message IDs of their replies.
+**Validates: Requirements 2.6**
+
+**Property 68: Reply deletion removes message**
+*For any* reply message, deleting it using its message ID should remove the message from the thread and update the thread's timestamp.
+**Validates: Requirements 2.7**
 
 ### Ghost Behavior Properties
 

@@ -78,6 +78,8 @@ export function createCommandRegistry(auth?: AuthContext): CommandRegistry {
           
           terminal.writeln(`${gray}${bold}MESSAGE BOARD${reset}`);
           terminal.writeln(`  ${purple}board${reset}             ${dimGray}View message board threads${reset}`);
+          terminal.writeln(`  ${purple}posted${reset}            ${dimGray}View your posted threads${reset}`);
+          terminal.writeln(`  ${purple}replied${reset}           ${dimGray}View threads you've replied to${reset}`);
           terminal.writeln(`  ${purple}read <id>${reset}         ${dimGray}Read a specific thread${reset}`);
           terminal.writeln(`  ${purple}post${reset}              ${dimGray}Create a new thread${reset}`);
           terminal.writeln(`  ${purple}reply <id>${reset}        ${dimGray}Reply to a thread${reset}`);
@@ -264,12 +266,351 @@ export function createCommandRegistry(auth?: AuthContext): CommandRegistry {
       handler: async (_args: string[], terminal: Terminal) => {
         const dimGray = '\x1b[90m';
         const purple = '\x1b[35m';
+        const brightPurple = '\x1b[95m';
+        const gray = '\x1b[37m';
+        const red = '\x1b[31m';
         const reset = '\x1b[0m';
-        
+        const bold = '\x1b[1m';
+
+        if (!auth) {
+          terminal.writeln('');
+          terminal.writeln(`${red}Authentication system not available${reset}`);
+          terminal.writeln('');
+          return;
+        }
+
         terminal.writeln('');
-        terminal.writeln(`${dimGray}[Message board not yet implemented]${reset}`);
-        terminal.writeln(`${purple}Coming soon...${reset}`);
+        terminal.writeln(`${dimGray}Loading threads...${reset}`);
+
+        try {
+          const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+          const headers: Record<string, string> = {};
+          
+          // Include auth token if logged in
+          if (auth.isAuthenticated && auth.token) {
+            headers['Authorization'] = `Bearer ${auth.token}`;
+          }
+          
+          const response = await fetch(`${API_URL}/api/boards/threads?limit=20`, {
+            headers,
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to fetch threads');
+          }
+
+          const data = await response.json();
+          const threads = data.threads || [];
+
+          // Clear the "Loading..." line
+          terminal.write('\x1b[1A\x1b[2K');
+
+          if (threads.length === 0) {
+            terminal.writeln('');
+            terminal.writeln(`${brightPurple}${bold}═══════════════════════════════════════════════════════════════${reset}`);
+            terminal.writeln(`${brightPurple}${bold}                      MESSAGE BOARD                             ${reset}`);
+            terminal.writeln(`${brightPurple}${bold}═══════════════════════════════════════════════════════════════${reset}`);
+            terminal.writeln('');
+            terminal.writeln(`${dimGray}The board is empty... for now.${reset}`);
+            terminal.writeln('');
+            if (auth.isAuthenticated) {
+              terminal.writeln(`${dimGray}Type ${purple}post "<title>" "<content>"${dimGray} to create the first thread${reset}`);
+              terminal.writeln(`${dimGray}Example: ${purple}post "Hello WRAITHNET" "This is my first post!"${reset}`);
+            } else {
+              terminal.writeln(`${dimGray}Type ${purple}login${dimGray} to authenticate and create threads${reset}`);
+            }
+            terminal.writeln('');
+            return;
+          }
+
+          // Display threads (limit to 20)
+          terminal.writeln('');
+          terminal.writeln(`${brightPurple}${bold}═══════════════════════════════════════════════════════════════${reset}`);
+          terminal.writeln(`${brightPurple}${bold}                      MESSAGE BOARD                             ${reset}`);
+          terminal.writeln(`${brightPurple}${bold}═══════════════════════════════════════════════════════════════${reset}`);
+          terminal.writeln('');
+
+          const displayThreads = threads.slice(0, 20);
+          
+          for (const thread of displayThreads) {
+            const date = new Date(thread.createdAt);
+            const dateStr = date.toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            });
+
+            // Thread ID and title only
+            terminal.writeln(`${purple}[${thread.id.substring(0, 8)}]${reset} ${gray}${thread.title}${reset}`);
+            
+            // Author and date on same line
+            const messageCount = thread.messageCount || thread._count?.messages || 0;
+            const replyText = messageCount === 1 ? 'reply' : 'replies';
+            terminal.writeln(`${dimGray}  ${brightPurple}${thread.author.username}${dimGray} • ${dateStr} • ${messageCount} ${replyText}${reset}`);
+            terminal.writeln('');
+          }
+
+          terminal.writeln(`${dimGray}═══════════════════════════════════════════════════════════════${reset}`);
+          
+          if (auth.isAuthenticated) {
+            terminal.writeln(`${dimGray}Type ${purple}read <id>${dimGray} to view a thread${reset}`);
+            terminal.writeln(`${dimGray}Type ${purple}post "<title>" "<content>"${dimGray} to create a new thread${reset}`);
+          } else {
+            terminal.writeln(`${dimGray}Type ${purple}read <id>${dimGray} to view a thread (login required)${reset}`);
+            terminal.writeln(`${dimGray}Type ${purple}login${dimGray} to authenticate and post threads${reset}`);
+          }
+          terminal.writeln('');
+        } catch (error) {
+          // Clear the "Loading..." line
+          terminal.write('\x1b[1A\x1b[2K');
+          terminal.writeln('');
+          terminal.writeln(`${red}✗ Failed to load threads${reset}`);
+          terminal.writeln(`${dimGray}${error instanceof Error ? error.message : 'Unknown error'}${reset}`);
+          terminal.writeln('');
+        }
+      },
+    },
+
+    replied: {
+      name: 'replied',
+      description: 'View threads you have replied to',
+      aliases: ['myreplies', 'replies'],
+      usage: 'replied',
+      handler: async (_args: string[], terminal: Terminal) => {
+        const dimGray = '\x1b[90m';
+        const purple = '\x1b[35m';
+        const brightPurple = '\x1b[95m';
+        const gray = '\x1b[37m';
+        const red = '\x1b[31m';
+        const reset = '\x1b[0m';
+        const bold = '\x1b[1m';
+
+        if (!auth) {
+          terminal.writeln('');
+          terminal.writeln(`${red}Authentication system not available${reset}`);
+          terminal.writeln('');
+          return;
+        }
+
+        if (!auth.isAuthenticated) {
+          terminal.writeln('');
+          terminal.writeln(`${dimGray}You must be logged in to view your reply history${reset}`);
+          terminal.writeln(`${dimGray}Type ${purple}login${dimGray} to authenticate${reset}`);
+          terminal.writeln('');
+          return;
+        }
+
         terminal.writeln('');
+        terminal.writeln(`${dimGray}Loading your reply history...${reset}`);
+
+        try {
+          const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+          const response = await fetch(`${API_URL}/api/boards/replies?limit=20`, {
+            headers: {
+              Authorization: `Bearer ${auth.token}`,
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to fetch reply history');
+          }
+
+          const data = await response.json();
+          const threads = data.threads || [];
+
+          // Clear the "Loading..." line
+          terminal.write('\x1b[1A\x1b[2K');
+
+          if (threads.length === 0) {
+            terminal.writeln('');
+            terminal.writeln(`${brightPurple}${bold}═══════════════════════════════════════════════════════════════${reset}`);
+            terminal.writeln(`${brightPurple}${bold}                    REPLY HISTORY                              ${reset}`);
+            terminal.writeln(`${brightPurple}${bold}═══════════════════════════════════════════════════════════════${reset}`);
+            terminal.writeln('');
+            terminal.writeln(`${dimGray}You haven't replied to any threads yet.${reset}`);
+            terminal.writeln('');
+            terminal.writeln(`${dimGray}Type ${purple}board${dimGray} to view threads and ${purple}reply <id> "<content>"${dimGray} to add replies${reset}`);
+            terminal.writeln('');
+            return;
+          }
+
+          // Display threads user has replied to
+          terminal.writeln('');
+          terminal.writeln(`${brightPurple}${bold}═══════════════════════════════════════════════════════════════${reset}`);
+          terminal.writeln(`${brightPurple}${bold}                    REPLY HISTORY                              ${reset}`);
+          terminal.writeln(`${brightPurple}${bold}═══════════════════════════════════════════════════════════════${reset}`);
+          terminal.writeln('');
+
+          for (const thread of threads) {
+            const date = new Date(thread.createdAt);
+            const dateStr = date.toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            });
+
+            // Thread ID and title
+            terminal.writeln(`${purple}[${thread.id.substring(0, 8)}]${reset} ${gray}${thread.title}${reset}`);
+            
+            // Author and reply info
+            const replyCount = thread.userReplyIds?.length || 0;
+            const replyText = replyCount === 1 ? 'reply' : 'replies';
+            terminal.writeln(`${dimGray}  by ${brightPurple}${thread.author.username}${dimGray} • ${dateStr} • You posted ${replyCount} ${replyText}${reset}`);
+            
+            // Show user's replies with content
+            if (thread.userReplies && thread.userReplies.length > 0) {
+              terminal.writeln(`${dimGray}  Your replies:${reset}`);
+              for (const reply of thread.userReplies) {
+                const replyDate = new Date(reply.createdAt);
+                const replyDateStr = replyDate.toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                });
+                terminal.writeln(`${dimGray}    ${purple}[${reply.id.substring(0, 8)}]${dimGray} ${replyDateStr}${reset}`);
+                // Wrap long content and indent it
+                const maxWidth = 60;
+                const words = reply.content.split(' ');
+                let currentLine = '';
+                for (const word of words) {
+                  if ((currentLine + word).length > maxWidth) {
+                    if (currentLine) {
+                      terminal.writeln(`${dimGray}      ${gray}${currentLine.trim()}${reset}`);
+                      currentLine = word + ' ';
+                    } else {
+                      terminal.writeln(`${dimGray}      ${gray}${word}${reset}`);
+                    }
+                  } else {
+                    currentLine += word + ' ';
+                  }
+                }
+                if (currentLine.trim()) {
+                  terminal.writeln(`${dimGray}      ${gray}${currentLine.trim()}${reset}`);
+                }
+              }
+            }
+            terminal.writeln('');
+          }
+
+          terminal.writeln(`${dimGray}═══════════════════════════════════════════════════════════════${reset}`);
+          terminal.writeln(`${dimGray}Total: ${threads.length} thread${threads.length === 1 ? '' : 's'}${reset}`);
+          terminal.writeln(`${dimGray}Type ${purple}read <id>${dimGray} to view a thread${reset}`);
+          terminal.writeln(`${dimGray}Type ${purple}board${dimGray} to view all threads${reset}`);
+          terminal.writeln('');
+        } catch (error) {
+          // Clear the "Loading..." line
+          terminal.write('\x1b[1A\x1b[2K');
+          terminal.writeln('');
+          terminal.writeln(`${red}✗ Failed to load reply history${reset}`);
+          terminal.writeln(`${dimGray}${error instanceof Error ? error.message : 'Unknown error'}${reset}`);
+          terminal.writeln('');
+        }
+      },
+    },
+
+    posted: {
+      name: 'posted',
+      description: 'View your posted threads',
+      aliases: ['mythreads', 'myposts'],
+      usage: 'posted',
+      handler: async (_args: string[], terminal: Terminal) => {
+        const dimGray = '\x1b[90m';
+        const purple = '\x1b[35m';
+        const brightPurple = '\x1b[95m';
+        const gray = '\x1b[37m';
+        const red = '\x1b[31m';
+        const reset = '\x1b[0m';
+        const bold = '\x1b[1m';
+
+        if (!auth) {
+          terminal.writeln('');
+          terminal.writeln(`${red}Authentication system not available${reset}`);
+          terminal.writeln('');
+          return;
+        }
+
+        if (!auth.isAuthenticated) {
+          terminal.writeln('');
+          terminal.writeln(`${dimGray}You must be logged in to view your threads${reset}`);
+          terminal.writeln(`${dimGray}Type ${purple}login${dimGray} to authenticate${reset}`);
+          terminal.writeln('');
+          return;
+        }
+
+        terminal.writeln('');
+        terminal.writeln(`${dimGray}Loading your threads...${reset}`);
+
+        try {
+          const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+          const response = await fetch(`${API_URL}/api/boards/my-threads?limit=20`, {
+            headers: {
+              Authorization: `Bearer ${auth.token}`,
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to fetch your threads');
+          }
+
+          const data = await response.json();
+          const threads = data.threads || [];
+
+          // Clear the "Loading..." line
+          terminal.write('\x1b[1A\x1b[2K');
+
+          if (threads.length === 0) {
+            terminal.writeln('');
+            terminal.writeln(`${brightPurple}${bold}═══════════════════════════════════════════════════════════════${reset}`);
+            terminal.writeln(`${brightPurple}${bold}                      MY THREADS                                ${reset}`);
+            terminal.writeln(`${brightPurple}${bold}═══════════════════════════════════════════════════════════════${reset}`);
+            terminal.writeln('');
+            terminal.writeln(`${dimGray}You haven't created any threads yet.${reset}`);
+            terminal.writeln('');
+            terminal.writeln(`${dimGray}Type ${purple}post "<title>" "<content>"${dimGray} to create your first thread${reset}`);
+            terminal.writeln(`${dimGray}Example: ${purple}post "Hello WRAITHNET" "This is my first post!"${reset}`);
+            terminal.writeln('');
+            return;
+          }
+
+          // Display user's threads
+          terminal.writeln('');
+          terminal.writeln(`${brightPurple}${bold}═══════════════════════════════════════════════════════════════${reset}`);
+          terminal.writeln(`${brightPurple}${bold}                      MY THREADS                                ${reset}`);
+          terminal.writeln(`${brightPurple}${bold}═══════════════════════════════════════════════════════════════${reset}`);
+          terminal.writeln('');
+
+          for (const thread of threads) {
+            const date = new Date(thread.createdAt);
+            const dateStr = date.toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            });
+
+            // Thread ID and title
+            terminal.writeln(`${purple}[${thread.id.substring(0, 8)}]${reset} ${gray}${thread.title}${reset}`);
+            
+            // Date and reply count
+            const messageCount = thread.messageCount || thread._count?.messages || 0;
+            const replyText = messageCount === 1 ? 'reply' : 'replies';
+            terminal.writeln(`${dimGray}  Posted on ${dateStr} • ${messageCount} ${replyText}${reset}`);
+            terminal.writeln('');
+          }
+
+          terminal.writeln(`${dimGray}═══════════════════════════════════════════════════════════════${reset}`);
+          terminal.writeln(`${dimGray}Total: ${threads.length} thread${threads.length === 1 ? '' : 's'}${reset}`);
+          terminal.writeln(`${dimGray}Type ${purple}read <id>${dimGray} to view a thread${reset}`);
+          terminal.writeln(`${dimGray}Type ${purple}board${dimGray} to view all threads${reset}`);
+          terminal.writeln('');
+        } catch (error) {
+          // Clear the "Loading..." line
+          terminal.write('\x1b[1A\x1b[2K');
+          terminal.writeln('');
+          terminal.writeln(`${red}✗ Failed to load your threads${reset}`);
+          terminal.writeln(`${dimGray}${error instanceof Error ? error.message : 'Unknown error'}${reset}`);
+          terminal.writeln('');
+        }
       },
     },
 
@@ -280,58 +621,399 @@ export function createCommandRegistry(auth?: AuthContext): CommandRegistry {
       handler: async (_args: string[], terminal: Terminal) => {
         const dimGray = '\x1b[90m';
         const purple = '\x1b[35m';
+        const brightPurple = '\x1b[95m';
+        const gray = '\x1b[37m';
+        const red = '\x1b[31m';
         const reset = '\x1b[0m';
-        
-        if (_args.length === 0) {
+        const bold = '\x1b[1m';
+
+        if (!auth) {
           terminal.writeln('');
-          terminal.writeln(`${dimGray}Usage: read <thread_id>${reset}`);
+          terminal.writeln(`${red}Authentication system not available${reset}`);
           terminal.writeln('');
           return;
         }
-        
+
+        if (!auth.isAuthenticated) {
+          terminal.writeln('');
+          terminal.writeln(`${dimGray}You must be logged in to read threads${reset}`);
+          terminal.writeln(`${dimGray}Type ${purple}login${dimGray} to authenticate${reset}`);
+          terminal.writeln('');
+          return;
+        }
+
+        if (_args.length === 0) {
+          terminal.writeln('');
+          terminal.writeln(`${dimGray}Usage: ${purple}read <thread_id>${reset}`);
+          terminal.writeln(`${dimGray}Example: ${purple}read a1b2c3d4${reset}`);
+          terminal.writeln('');
+          return;
+        }
+
+        const threadId = _args[0];
+
         terminal.writeln('');
-        terminal.writeln(`${dimGray}[Thread reading not yet implemented]${reset}`);
-        terminal.writeln(`${purple}Coming soon...${reset}`);
-        terminal.writeln('');
+        terminal.writeln(`${dimGray}Loading thread...${reset}`);
+
+        try {
+          const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+          const response = await fetch(`${API_URL}/api/boards/threads/${threadId}`, {
+            headers: {
+              Authorization: `Bearer ${auth.token}`,
+            },
+          });
+
+          if (!response.ok) {
+            if (response.status === 404) {
+              throw new Error('Thread not found');
+            }
+            throw new Error('Failed to fetch thread');
+          }
+
+          const data = await response.json();
+          const thread = data.thread;
+
+          // Clear the "Loading..." line
+          terminal.write('\x1b[1A\x1b[2K');
+
+          // Display thread header
+          terminal.writeln('');
+          terminal.writeln(
+            `${brightPurple}${bold}═══════════════════════════════════════════════════════════════${reset}`
+          );
+          terminal.writeln(`${gray}${bold}${thread.title}${reset}`);
+          terminal.writeln(
+            `${brightPurple}${bold}═══════════════════════════════════════════════════════════════${reset}`
+          );
+          terminal.writeln('');
+
+          // Display messages in chronological order
+          const messages = thread.messages || [];
+
+          for (let i = 0; i < messages.length; i++) {
+            const message = messages[i];
+            const date = new Date(message.createdAt);
+            const dateStr = date.toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            });
+            const timeStr = date.toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+            });
+
+            // Indent for replies (not the original post)
+            const indent = i === 0 ? '' : '  ';
+            const replyMarker = i === 0 ? '' : `${purple}↳${reset} `;
+
+            // Message header
+            if (i === 0) {
+              terminal.writeln(`${brightPurple}${bold}${message.author.username}${reset} ${dimGray}(OP)${reset}`);
+              terminal.writeln(`${dimGray}${dateStr} at ${timeStr}${reset}`);
+            } else {
+              terminal.writeln(`${indent}${replyMarker}${brightPurple}${bold}${message.author.username}${reset}`);
+              terminal.writeln(`${indent}  ${dimGray}${dateStr} at ${timeStr}${reset}`);
+            }
+            terminal.writeln('');
+
+            // Message content
+            const lines = message.content.split('\n');
+            for (const line of lines) {
+              terminal.writeln(`${indent}${gray}${line}${reset}`);
+            }
+
+            // Separator between messages
+            if (i < messages.length - 1) {
+              terminal.writeln('');
+              if (i === 0) {
+                // Separator after original post
+                terminal.writeln(`${dimGray}───────────────────────────────────────────────────────────────${reset}`);
+                terminal.writeln(`${dimGray}Replies:${reset}`);
+              }
+              terminal.writeln('');
+            }
+          }
+
+          terminal.writeln('');
+          terminal.writeln(
+            `${brightPurple}${bold}═══════════════════════════════════════════════════════════════${reset}`
+          );
+          terminal.writeln(
+            `${dimGray}Type ${purple}reply ${threadId.substring(0, 8)}${dimGray} to add a reply${reset}`
+          );
+          terminal.writeln(`${dimGray}Type ${purple}board${dimGray} to return to the message board${reset}`);
+          terminal.writeln('');
+        } catch (error) {
+          // Clear the "Loading..." line
+          terminal.write('\x1b[1A\x1b[2K');
+          terminal.writeln('');
+          terminal.writeln(`${red}✗ Failed to load thread${reset}`);
+          terminal.writeln(`${dimGray}${error instanceof Error ? error.message : 'Unknown error'}${reset}`);
+          terminal.writeln('');
+        }
       },
     },
 
     post: {
       name: 'post',
       description: 'Create a new thread',
-      usage: 'post',
+      usage: 'post "<title>" "<content>"',
       handler: async (_args: string[], terminal: Terminal) => {
         const dimGray = '\x1b[90m';
         const purple = '\x1b[35m';
+        const brightPurple = '\x1b[95m';
+        const red = '\x1b[31m';
+        const green = '\x1b[32m';
         const reset = '\x1b[0m';
-        
+
+        if (!auth) {
+          terminal.writeln('');
+          terminal.writeln(`${red}Authentication system not available${reset}`);
+          terminal.writeln('');
+          return;
+        }
+
+        if (!auth.isAuthenticated) {
+          terminal.writeln('');
+          terminal.writeln(`${dimGray}You must be logged in to create threads${reset}`);
+          terminal.writeln(`${dimGray}Type ${purple}login${dimGray} to authenticate${reset}`);
+          terminal.writeln('');
+          return;
+        }
+
+        // The command parser already handles quoted strings and removes quotes
+        // So _args[0] is the title and _args[1] is the content
+        if (_args.length < 2) {
+          terminal.writeln('');
+          terminal.writeln(`${dimGray}Usage: ${purple}post "<title>" "<content>"${reset}`);
+          terminal.writeln(
+            `${dimGray}Example: ${purple}post "Welcome to WRAITHNET" "This is my first post!"${reset}`
+          );
+          terminal.writeln('');
+          return;
+        }
+
+        const title = _args[0];
+        const content = _args[1];
+
+        if (!title.trim() || !content.trim()) {
+          terminal.writeln('');
+          terminal.writeln(`${red}Title and content cannot be empty${reset}`);
+          terminal.writeln('');
+          return;
+        }
+
         terminal.writeln('');
-        terminal.writeln(`${dimGray}[Thread creation not yet implemented]${reset}`);
-        terminal.writeln(`${purple}Coming soon...${reset}`);
-        terminal.writeln('');
+        terminal.writeln(`${dimGray}Creating thread...${reset}`);
+
+        try {
+          const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+          const response = await fetch(`${API_URL}/api/boards/threads`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${auth.token}`,
+            },
+            body: JSON.stringify({
+              title: title.trim(),
+              content: content.trim(),
+            }),
+          });
+
+          if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || data.message || 'Failed to create thread');
+          }
+
+          const data = await response.json();
+          const thread = data.thread;
+
+          // Clear the "Creating..." line
+          terminal.write('\x1b[1A\x1b[2K');
+
+          terminal.writeln('');
+          terminal.writeln(`${green}✓ Thread created successfully!${reset}`);
+          terminal.writeln(`${dimGray}Thread ID: ${brightPurple}${thread.id.substring(0, 8)}${reset}`);
+          terminal.writeln(`${dimGray}Title: ${brightPurple}${title}${reset}`);
+          terminal.writeln('');
+          terminal.writeln(`${dimGray}Type ${purple}read ${thread.id.substring(0, 8)}${dimGray} to view your thread${reset}`);
+          terminal.writeln(`${dimGray}Type ${purple}board${dimGray} to see it on the message board${reset}`);
+          terminal.writeln('');
+        } catch (error) {
+          // Clear the "Creating..." line
+          terminal.write('\x1b[1A\x1b[2K');
+          terminal.writeln('');
+          terminal.writeln(`${red}✗ Failed to create thread${reset}`);
+          terminal.writeln(`${dimGray}${error instanceof Error ? error.message : 'Unknown error'}${reset}`);
+          terminal.writeln('');
+        }
       },
     },
 
     reply: {
       name: 'reply',
       description: 'Reply to a thread',
-      usage: 'reply <thread_id>',
+      usage: 'reply <thread_id> "<content>"',
       handler: async (_args: string[], terminal: Terminal) => {
         const dimGray = '\x1b[90m';
         const purple = '\x1b[35m';
+        const brightPurple = '\x1b[95m';
+        const red = '\x1b[31m';
+        const green = '\x1b[32m';
         const reset = '\x1b[0m';
-        
-        if (_args.length === 0) {
+
+        if (!auth) {
           terminal.writeln('');
-          terminal.writeln(`${dimGray}Usage: reply <thread_id>${reset}`);
+          terminal.writeln(`${red}Authentication system not available${reset}`);
           terminal.writeln('');
           return;
         }
-        
+
+        if (!auth.isAuthenticated) {
+          terminal.writeln('');
+          terminal.writeln(`${dimGray}You must be logged in to reply to threads${reset}`);
+          terminal.writeln(`${dimGray}Type ${purple}login${dimGray} to authenticate${reset}`);
+          terminal.writeln('');
+          return;
+        }
+
+        if (_args.length < 2) {
+          terminal.writeln('');
+          terminal.writeln(`${dimGray}Usage: ${purple}reply <thread_id> "<content>"${reset}`);
+          terminal.writeln(
+            `${dimGray}Example: ${purple}reply a1b2c3d4 "Great post!"${reset}`
+          );
+          terminal.writeln('');
+          return;
+        }
+
+        // The command parser already handles quoted strings
+        const threadId = _args[0];
+        const content = _args[1];
+
+        if (!content.trim()) {
+          terminal.writeln('');
+          terminal.writeln(`${red}Reply content cannot be empty${reset}`);
+          terminal.writeln('');
+          return;
+        }
+
         terminal.writeln('');
-        terminal.writeln(`${dimGray}[Reply functionality not yet implemented]${reset}`);
-        terminal.writeln(`${purple}Coming soon...${reset}`);
-        terminal.writeln('');
+        terminal.writeln(`${dimGray}Fetching thread...${reset}`);
+
+        try {
+          const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+          
+          // First, fetch the thread to show what we're replying to
+          const threadResponse = await fetch(
+            `${API_URL}/api/boards/threads/${threadId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${auth.token}`,
+              },
+            }
+          );
+
+          if (!threadResponse.ok) {
+            if (threadResponse.status === 404) {
+              throw new Error('Thread not found');
+            }
+            const data = await threadResponse.json();
+            throw new Error(data.error || data.message || 'Failed to fetch thread');
+          }
+
+          const threadData = await threadResponse.json();
+          const thread = threadData.data;
+
+          // Clear the "Fetching..." line
+          terminal.write('\x1b[1A\x1b[2K');
+
+          // Show the thread we're replying to
+          terminal.writeln('');
+          terminal.writeln(`${dimGray}━━━ Replying to ━━━${reset}`);
+          terminal.writeln(`${purple}${thread.title}${reset}`);
+          terminal.writeln(`${dimGray}by ${brightPurple}${thread.author.username}${reset}`);
+          
+          // Show the original post content (first message)
+          if (thread.messages && thread.messages.length > 0) {
+            const originalPost = thread.messages[0];
+            terminal.writeln('');
+            terminal.writeln(`${dimGray}Original post:${reset}`);
+            const maxWidth = 60;
+            const words = originalPost.content.split(' ');
+            let currentLine = '';
+            for (const word of words) {
+              if ((currentLine + word).length > maxWidth) {
+                if (currentLine) {
+                  terminal.writeln(`  ${currentLine.trim()}`);
+                  currentLine = word + ' ';
+                } else {
+                  terminal.writeln(`  ${word}`);
+                }
+              } else {
+                currentLine += word + ' ';
+              }
+            }
+            if (currentLine.trim()) {
+              terminal.writeln(`  ${currentLine.trim()}`);
+            }
+          }
+          
+          terminal.writeln(`${dimGray}━━━━━━━━━━━━━━━━━━${reset}`);
+          terminal.writeln('');
+          terminal.writeln(`${dimGray}Posting your reply...${reset}`);
+
+          // Now post the reply
+          const response = await fetch(
+            `${API_URL}/api/boards/threads/${threadId}/messages`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${auth.token}`,
+              },
+              body: JSON.stringify({
+                content: content.trim(),
+              }),
+            }
+          );
+
+          if (!response.ok) {
+            if (response.status === 404) {
+              throw new Error('Thread not found');
+            }
+            const data = await response.json();
+            throw new Error(data.error || data.message || 'Failed to post reply');
+          }
+
+          const responseData = await response.json();
+          const message = responseData.data;
+
+          // Clear the "Posting..." line
+          terminal.write('\x1b[1A\x1b[2K');
+
+          terminal.writeln('');
+          terminal.writeln(`${green}✓ Reply posted successfully!${reset}`);
+          terminal.writeln(
+            `${dimGray}Message ID: ${brightPurple}${message.id.substring(0, 8)}${reset}`
+          );
+          terminal.writeln('');
+          terminal.writeln(
+            `${dimGray}Type ${purple}read ${threadId.substring(0, 8)}${dimGray} to view the updated thread${reset}`
+          );
+          terminal.writeln(`${dimGray}Type ${purple}board${dimGray} to return to the message board${reset}`);
+          terminal.writeln('');
+        } catch (error) {
+          // Clear the "Posting..." line
+          terminal.write('\x1b[1A\x1b[2K');
+          terminal.writeln('');
+          terminal.writeln(`${red}✗ Failed to post reply${reset}`);
+          terminal.writeln(
+            `${dimGray}${error instanceof Error ? error.message : 'Unknown error'}${reset}`
+          );
+          terminal.writeln('');
+        }
       },
     },
 

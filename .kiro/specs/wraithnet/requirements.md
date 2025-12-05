@@ -45,6 +45,8 @@ WRAITHNET is an immersive retro terminal-based digital experience that revives t
 3. WHEN a user creates a new thread with valid content THEN the WRAITHNET SHALL persist the thread and make it visible to all users
 4. WHEN a user replies to an existing thread THEN the WRAITHNET SHALL append the message to the thread and update the thread timestamp
 5. WHEN the Ghost injects a message into a thread THEN the WRAITHNET SHALL insert the ghost message and mark it with supernatural styling
+6. WHEN a user requests their reply history THEN the WRAITHNET SHALL display all threads the user has replied to with the message IDs of their replies
+7. WHEN a user deletes a reply using a message ID THEN the WRAITHNET SHALL remove the reply from the thread and update the thread timestamp
 
 ### Requirement 3: Ghost Message Injection and Thread Corruption
 

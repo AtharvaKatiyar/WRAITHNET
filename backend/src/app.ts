@@ -5,6 +5,7 @@ import pinoHttp from 'pino-http';
 import logger from './config/logger';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import authRoutes from './routes/authRoutes';
+import boardRoutes from './routes/boardRoutes';
 
 export const createApp = (): Application => {
   const app = express();
@@ -48,6 +49,7 @@ export const createApp = (): Application => {
 
   // API routes
   app.use('/api/auth', authRoutes);
+  app.use('/api/boards', boardRoutes);
 
   // 404 handler
   app.use(notFoundHandler);

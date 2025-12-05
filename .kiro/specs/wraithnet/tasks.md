@@ -105,62 +105,96 @@
   - _Requirements: 1.1, 1.2_
 
 - [ ] 6. Message Board Backend
-- [ ] 6.1 Implement thread management endpoints
+- [x] 6.1 Implement thread management endpoints
   - Create GET /api/boards/threads endpoint (list all threads)
   - Create GET /api/boards/threads/:id endpoint (get single thread with messages)
   - Create POST /api/boards/threads endpoint (create new thread)
   - Implement pagination for thread listing
   - _Requirements: 2.1, 2.2, 2.3_
 
-- [ ] 6.2 Write property test for thread display
+- [x] 6.2 Write property test for thread display
   - **Property 6: Thread display completeness**
   - **Validates: Requirements 2.1**
 
-- [ ] 6.3 Write property test for thread creation
+- [x] 6.3 Write property test for thread creation
   - **Property 8: Thread creation persistence**
   - **Validates: Requirements 2.3**
 
-- [ ] 6.4 Implement message management endpoints
+- [x] 6.4 Implement message management endpoints
   - Create POST /api/boards/threads/:id/messages endpoint (reply to thread)
   - Create GET /api/boards/threads/:id/messages endpoint (get thread messages)
   - Update thread timestamp on new message
   - _Requirements: 2.4_
 
-- [ ] 6.5 Write property test for message ordering
+- [x] 6.5 Write property test for message ordering
   - **Property 7: Message chronological ordering**
   - **Validates: Requirements 2.2**
 
-- [ ] 6.6 Write property test for reply appending
+- [x] 6.6 Write property test for reply appending
   - **Property 9: Reply appending**
   - **Validates: Requirements 2.4**
 
+- [x] 6.7 Implement reply history endpoint
+  - Create GET /api/boards/replies endpoint (get user's reply history)
+  - Return all threads user has replied to with message IDs
+  - Include thread metadata and reply content
+  - _Requirements: 2.6_
+
+- [x] 6.8 Write property test for reply history
+  - **Property 67: Reply history completeness**
+  - **Validates: Requirements 2.6**
+
+- [x] 6.9 Implement reply deletion endpoint
+  - Create DELETE /api/boards/messages/:messageId endpoint
+  - Verify user owns the message before deletion
+  - Remove message from thread
+  - Update thread timestamp to most recent remaining message
+  - _Requirements: 2.7_
+
+- [x] 6.10 Write property test for reply deletion
+  - **Property 68: Reply deletion removes message**
+  - **Validates: Requirements 2.7**
+
 - [ ] 7. Message Board Frontend
-- [ ] 7.1 Implement board command to list threads
+- [x] 7.1 Implement board command to list threads
   - Create command handler for "board" or "threads"
   - Fetch threads from API
   - Display threads in terminal with formatting (ID, title, author, date)
   - _Requirements: 2.1_
 
-- [ ] 7.2 Implement thread viewing command
+- [x] 7.2 Implement thread viewing command
   - Create command handler for "read <thread_id>"
   - Fetch thread messages from API
   - Display messages in chronological order with author and timestamp
   - _Requirements: 2.2_
 
-- [ ] 7.3 Implement thread creation command
+- [x] 7.3 Implement thread creation command
   - Create command handler for "post <title>"
   - Prompt user for message content
   - Send POST request to create thread
   - Display success message
   - _Requirements: 2.3_
 
-- [ ] 7.4 Implement reply command
+- [x] 7.4 Implement reply command
   - Create command handler for "reply <thread_id>"
   - Prompt user for message content
   - Send POST request to add message
   - Display success message
   - _Requirements: 2.4_
 
+- [x] 7.5 Implement replied command
+  - Create command handler for "replied"
+  - Fetch user's reply history from API
+  - Display threads with reply message IDs in terminal
+  - Format output to show thread title, thread ID, reply content, and message ID
+  - _Requirements: 2.6_
+
+- [ ] 7.6 Implement delete-reply command
+  - Create command handler for "delete-reply <message_id>"
+  - Send DELETE request to remove reply
+  - Display success or error message
+  - Handle authorization errors (user doesn't own the reply)
+  - _Requirements: 2.7_
 
 - [ ] 8. WebSocket Infrastructure
 - [ ] 8.1 Set up Socket.io on backend
