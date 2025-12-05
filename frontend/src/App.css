@@ -1,0 +1,14 @@
+/* WRAITHNET App Styles */
+.app-container {
+  font-family: 'Courier New', 'Consolas', monospace;
+}
+
+.terminal-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.terminal-wrapper {
+  flex: 1;
+  overflow: hidden;
+}

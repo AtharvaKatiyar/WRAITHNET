@@ -1,0 +1,168 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  lastLogin    DateTime @default(now()) @map("last_login")
+
+  // Relations
+  threads       Thread[]
+  messages      Message[]
+  graves        Grave[]
+  mailMessages  MailMessage[]
+  gameSessions  GameSession[]
+  sysopAccess   SysopAccess?
+
+  @@map("users")
+}
+
+model Thread {
+  id            String   @id @default(uuid())
+  authorId      String   @map("author_id")
+  title         String
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  isHidden      Boolean  @default(false) @map("is_hidden")
+  isGhostThread Boolean  @default(false) @map("is_ghost_thread")
+
+  // Relations
+  author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@index([authorId])
+  @@index([createdAt])
+  @@map("threads")
+}
+
+model Message {
+  id             String   @id @default(uuid())
+  threadId       String   @map("thread_id")
+  authorId       String?  @map("author_id") // Nullable for ghost messages
+  content        String   @db.Text
+  isCorrupted    Boolean  @default(false) @map("is_corrupted")
+  isGhostMessage Boolean  @default(false) @map("is_ghost_message")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // Relations
+  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  author User?  @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([threadId])
+  @@index([authorId])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+model Grave {
+  id                String    @id @default(uuid())
+  userId            String    @map("user_id")
+  fileName          String    @map("file_name")
+  fileSize          Int       @map("file_size")
+  fileType          String    @map("file_type")
+  storageKey        String    @map("storage_key")
+  epitaph           String    @db.Text
+  isPublic          Boolean   @default(false) @map("is_public")
+  buriedAt          DateTime  @default(now()) @map("buried_at")
+  raisedAt          DateTime? @map("raised_at")
+  corruptionApplied Boolean   @default(false) @map("corruption_applied")
+
+  // Relations
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments GhostComment[]
+
+  @@index([userId])
+  @@index([isPublic])
+  @@index([buriedAt])
+  @@map("graves")
+}
+
+model GhostComment {
+  id        String   @id @default(uuid())
+  graveId   String   @map("grave_id")
+  comment   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  grave Grave @relation(fields: [graveId], references: [id], onDelete: Cascade)
+
+  @@index([graveId])
+  @@map("ghost_comments")
+}
+
+enum MessageType {
+  SEANCE_TRANSCRIPT
+  GHOST_WARNING
+  SYSTEM_ALERT
+  LORE_FRAGMENT
+  PUZZLE_PIECE
+}
+
+model MailMessage {
+  id        String      @id @default(uuid())
+  userId    String      @map("user_id")
+  type      MessageType
+  subject   String
+  content   String      @db.Text
+  isRead    Boolean     @default(false) @map("is_read")
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("mail_messages")
+}
+
+model GameSession {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  gameId         String   @map("game_id")
+  currentSceneId String   @map("current_scene_id")
+  history        String[] @default([])
+  variables      Json     @default("{}")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([gameId])
+  @@map("game_sessions")
+}
+
+model SysopAccess {
+  id             String   @id @default(uuid())
+  userId         String   @unique @map("user_id")
+  unlockedAt     DateTime @default(now()) @map("unlocked_at")
+  puzzleSolution String   @map("puzzle_solution")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sysop_access")
+}
+
+model HiddenThread {
+  id              String  @id @default(uuid())
+  threadId        String  @unique @map("thread_id")
+  unlockCondition String  @map("unlock_condition")
+  isRevealed      Boolean @default(false) @map("is_revealed")
+
+  @@index([isRevealed])
+  @@map("hidden_threads")
+}

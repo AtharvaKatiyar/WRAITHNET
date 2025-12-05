@@ -1,0 +1,152 @@
+@import "tailwindcss";
+
+/* WRAITHNET Horror Theme - Purple & Gray */
+@theme {
+  /* Primary horror purple tones */
+  --color-ghost-purple: #a855f7;
+  --color-ghost-purple-dark: #7c3aed;
+  --color-ghost-purple-light: #c084fc;
+  
+  /* Eerie gray tones */
+  --color-terminal-bg: #0f0f1a;
+  --color-terminal-bg-light: #1a1a2e;
+  --color-terminal-text: #b8b8d4;
+  --color-terminal-text-dim: #6b6b8a;
+  
+  /* Accent colors */
+  --color-warning: #ef4444;
+  --color-success: #10b981;
+  --color-ghost-glow: #a855f7;
+  
+  /* Retro BBS fonts */
+  --font-family-mono: 'Courier New', 'Consolas', monospace;
+}
+
+/* WRAITHNET Terminal Styling */
+@layer base {
+  body {
+    background-color: var(--color-terminal-bg);
+    color: var(--color-terminal-text);
+    font-family: var(--font-family-mono);
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer utilities {
+  /* Ghost glow effect */
+  .ghost-glow {
+    text-shadow: 0 0 10px var(--color-ghost-glow), 0 0 20px var(--color-ghost-glow);
+  }
+  
+  /* Terminal scanlines for retro CRT effect */
+  .scanlines {
+    position: relative;
+  }
+  
+  .scanlines::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      to bottom,
+      transparent 50%,
+      rgba(0, 0, 0, 0.1) 50%
+    );
+    background-size: 100% 4px;
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  /* Eerie flicker animation */
+  .terminal-flicker {
+    animation: flicker 0.15s infinite;
+  }
+  
+  /* Haunted pulse effect */
+  .ghost-pulse {
+    animation: ghostPulse 2s ease-in-out infinite;
+  }
+  
+  /* CRT screen curvature effect */
+  .crt-screen {
+    border-radius: 8px;
+    box-shadow: 
+      inset 0 0 100px rgba(168, 85, 247, 0.1),
+      0 0 50px rgba(168, 85, 247, 0.2);
+  }
+}
+
+/* Animations */
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.92; }
+}
+
+@keyframes ghostPulse {
+  0%, 100% { 
+    opacity: 0.8;
+    text-shadow: 0 0 10px var(--color-ghost-glow);
+  }
+  50% { 
+    opacity: 1;
+    text-shadow: 0 0 20px var(--color-ghost-glow), 0 0 30px var(--color-ghost-glow);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes spookGlow {
+  0%, 100% { 
+    box-shadow: 0 0 5px rgba(168, 85, 247, 0.3);
+  }
+  50% { 
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.6), 0 0 30px rgba(168, 85, 247, 0.4);
+  }
+}
+
+/* Haunted Sidebar Styles */
+.haunted-sidebar {
+  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+  box-shadow: inset 0 0 50px rgba(168, 85, 247, 0.1);
+}
+
+.haunted-sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.haunted-sidebar::-webkit-scrollbar-track {
+  background: #0f0f1a;
+}
+
+.haunted-sidebar::-webkit-scrollbar-thumb {
+  background: #a855f7;
+  border-radius: 4px;
+}
+
+.haunted-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #c084fc;
+}
+
+/* Panel hover effects */
+.haunted-sidebar .panel {
+  transition: all 0.3s ease;
+  background: rgba(168, 85, 247, 0.03);
+}
+
+.haunted-sidebar .panel:hover {
+  background: rgba(168, 85, 247, 0.08);
+  border-color: #a855f7;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+}
